@@ -92,6 +92,9 @@ lookUpAA 'U' 'G' 'G' = Trp
 lookUpAA 'G' 'G'  _  = Gly
 lookUpAA _ _ _ = error "unknown trinucleotide sequence"
 
+validNucToAALength :: String -> Bool
+validNucToAALength s = 0 == mod (length s) 3
+
 
 
 complement :: String -> String

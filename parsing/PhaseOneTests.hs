@@ -13,3 +13,5 @@ import Text.Parsec.Pos (newPos)
 
 
 fastaGene a = parse parseGene "(unknown)" a
+
+getSeq1NucSequence=do {a<-fastaGene seq1; return $ nucSequence (a!!0)}

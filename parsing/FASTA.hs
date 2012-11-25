@@ -25,6 +25,8 @@ type FastaParser a = GenParser Char () a
 
 
 
+
+
 parseFastaFile :: String -> [Gene]
 parseFastaFile = parseFastaFile
 
