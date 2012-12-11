@@ -1,5 +1,6 @@
 module Converter
 
+
 where
 
 import ConverterTestData
@@ -7,10 +8,10 @@ import ConverterTestData
 
 data Gene = Gene 	{ geneInfo :: String
 					, nucSequence :: String
-					} deriving (Show, Eq)
+					} deriving (Show)
 
-data Protein = Protein { proteinInfo :: String
-                       , aaSequence :: [AA]
+data Protein = Protein {   proteinInfo :: String
+                         , aaSequence :: [AA]
                        } deriving (Show, Eq)
 
 
