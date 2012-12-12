@@ -8,7 +8,7 @@ import Converter
 import Data.Digest.SHA2
 import Data.List
 --import Data.Map.Lazy as Map
-import SeqAlign
+
 
 
 
@@ -50,10 +50,27 @@ geneSeqAdd :: Gene -> Gene -> Gene
 --geneSeqAdd a b = let m = generateMap a  --need a direction here (0=align on front, -1=align on back, >0 align in middle)
 geneSeqAdd = geneSeqAdd
 
-hSeqTest=h_seqMerge "AAAAATTTTT" "AAATTTG"
 
+data AlignmentResult = AlignmentResult {  resultString :: String
+										, amountSim :: Int
+									   } deriving (Show, Eq)
 
+frontOverlay::String->String->Int->AlignmentResult
+frontOverlay s1 s2 i = 	if i<length s2
+						then 	if isPrefixOf a s1
+								then AlignmentResult {resultString=(b++s1), amountSim=(length a)}
+								else frontOverlay s1 s2 (i+1)
+						else AlignmentResult {resultString=(s1++s2), amountSim=0}
+					where (b,a)=splitAt i s2
 --Map - k=hash value, v=DNA seq
+
+rearOverlay::String->String->Int->AlignmentResult
+rearOverlay s1 s2 i = 	if i>0
+						then	if isSuffixOf b s1
+								then AlignmentResult {resultString=(s1++a), amountSim=(length b)}
+								else rearOverlay s1 s2 (i-1)
+						else AlignmentResult {resultString=(s1++s2), amountSim=0}
+					where (b,a)=splitAt i s2
 
 --generateMap :: Gene -> Integer -> Map String String
 --generateMap a d = fromList $ makeTuples d $ nucSequence a
