@@ -16,6 +16,7 @@ import Data.List
 import qualified System.Time
 import FastaSequenceTestData
 import Converter
+import Data.Either
 
 
 
@@ -23,12 +24,17 @@ import Converter
 type FastaParser a = GenParser Char () a
 
 
+parseFastaFileToGenes a=do  b <- readFile a
+                            --putStrLn b
+                            s <- return $  parseFastaFile b
+                            case s of
+                                Left _  -> error ("parse failed => "++a)
+                                Right g ->mapM_ print g
 
 
 
-
-parseFastaFile :: String -> [Gene]
-parseFastaFile = parseFastaFile
+--parseFastaFile :: String -> [Gene]
+parseFastaFile a = parse parseGene "(unknown)" a
 
 --testSeq :: [Char] -> Either ParseError [Gene]
 testSeq a = parse parseGene "(unknown)" a
@@ -58,6 +64,14 @@ parseGeneInfo = do  char '>'
 parseGeneLine = do  i <- many1 (noneOf "\n>")
                     newline
                     return i
+
+
+
+
+
+
+
+
 
 
 

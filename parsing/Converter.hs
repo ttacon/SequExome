@@ -4,11 +4,29 @@ module Converter
 where
 
 import ConverterTestData
+import Data.List
 
 
 data Gene = Gene 	{ geneInfo :: String
 					, nucSequence :: String
-					} deriving (Show)
+					}
+
+instance Show Gene where
+  show g="Gene Name:\t"++(geneInfo g)++"\nGene sequence:\n"
+          ++ geneShowFormat (nucSequence g)
+
+geneShowFormat :: String -> String
+geneShowFormat [] = []
+geneShowFormat s =  if length s < 40
+                    then insertSpaces s
+                    else (insertSpaces a)++geneShowFormat b
+                      where (a,b)= splitAt 40 s
+
+insertSpaces :: String -> String
+insertSpaces s = a++" "++b++" "++c++" "++d++"\n"
+  where (a,e)=splitAt 10 s
+        (b,f)=splitAt 10 e
+        (c,d)=splitAt 10 f
 
 data Protein = Protein {   proteinInfo :: String
                          , aaSequence :: [AA]
@@ -56,6 +74,51 @@ notNuc 'G' = False
 notNuc 'C' = False
 notNuc 'U' = False
 notNuc  _  = True
+
+dnaToRNA :: String -> String
+dnaToRNA [] = []
+dnaToRNA ('A':xs)="A" ++ dnaToRNA xs
+dnaToRNA ('T':xs)="U" ++ dnaToRNA xs
+dnaToRNA ('G':xs)="G" ++ dnaToRNA xs
+dnaToRNA ('C':xs)="C" ++ dnaToRNA xs
+
+isStartCodon :: String -> Bool
+isStartCodon ('A':'T':'G':xs) = True
+isStartCodon _             = False
+
+isStopCodon :: String -> Bool
+isStopCodon ('T':'A':'G':xs) = True
+isStopCodon ('T':'A':'A':xs) = True
+isStopCodon ('T':'G':'A':xs) = True
+isStopCodon _ = False
+
+getOrf :: Gene -> String
+getOrf g =  getOrfFromSequence a
+  where a=nucSequence g
+
+getOrfFromSequence :: String -> String
+getOrfFromSequence s = ss0 ++ (readRestOfOrf ss2)
+  where   p=getSeqSplit s 3 0;
+          d=[(y,x) | (y,x)<-p, isStartCodon x];
+          (b,a)=head d;
+          (ss1,ss)=splitAt b s;
+          (ss0, ss2)=splitAt (b+3) ss;
+
+getSeqSplit :: String -> Int -> Int -> [(Int, String)]
+getSeqSplit s@(x:xs) l i= if length s <l
+          then []
+          else let (b,a)=splitAt l s
+              in [(i, b)] ++ getSeqSplit xs l (i+1)
+
+readRestOfOrf :: String -> String
+readRestOfOrf s = if length s <3
+                  then ""
+                  else if isStopCodon s
+                        then  if length s==3
+                              then s
+                              else take 3 s
+                        else (take 3 s) ++ readRestOfOrf (drop 3 s)
+
 
 -- change to use actual lookup function?
 lookUpAA :: Char -> Char -> Char -> AA
