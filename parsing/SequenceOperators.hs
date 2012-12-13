@@ -214,6 +214,16 @@ geneFragmentsToGenes (x:xs) i= [Gene{geneInfo=("fragment "++(show i)), nucSequen
 mergeFragments :: [Gene] -> Gene
 mergeFragments g = foldl1 (+) g
 
+getGCContent :: Gene -> Rational
+getGCContent g = (toRational gc)/(toRational n)
+	where 	a=nucSequence g;
+			n=length a;
+			gc=sum $ map isGC a;
+
+isGC :: Char -> Int
+isGC 'G' = 1
+isGC 'C' = 1
+isGC  _  = 0
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 --Testing data

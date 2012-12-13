@@ -17,7 +17,7 @@ import Data.Either
 import System.IO.Unsafe
 
 
-
+-----------------------------------------------------------------------------------------------------------------------------
 
 type FastaParser a = GenParser Char () a
 
@@ -66,9 +66,21 @@ parseGeneLine = do  i <- many1 (noneOf "\n>")
                     newline
                     return i
 
+-----------------------------------------------------------------------------------------------------------------------------
+--Writing to file
 
+writeToFastaFile :: [Gene] -> String -> IO ()
+writeToFastaFile gs fN = writeFile fN gs'
+    where gs' = genesToFastaString gs
 
+genesToFastaString :: [Gene] -> String
+genesToFastaString (x:[]) = ">"++(geneInfo x)++"\n"++(wrappedSequence $ nucSequence x)++"\n"
+genesToFastaString (x:xs) = ">"++(geneInfo x)++"\n"++(wrappedSequence $ nucSequence x)++"\n" ++ (genesToFastaString xs)
 
+wrappedSequence :: String -> String
+wrappedSequence s = if length s<70
+                    then s
+                    else (take 70 s)++"\n"++(wrappedSequence $ drop 70 s)
 
 
 
