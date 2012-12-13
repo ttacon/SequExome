@@ -69,7 +69,7 @@ buildNewGene ar g1 g2 = Gene {geneInfo=((geneInfo g1)++" "++(geneInfo g2)++(show
 
 bestAlignmentResult :: AlignmentResult -> AlignmentResult -> AlignmentResult -> AlignmentResult
 bestAlignmentResult ar1 ar2 ar3 = 	if (amountSim ar1) > (amountSim ar2) && (amountSim ar1) > (amountSim ar3)
-									then ar3
+									then ar1
 									else 	if (amountSim ar2) > (amountSim ar3)
 											then ar2
 											else ar3
@@ -190,6 +190,11 @@ strListToTuple s = (s!!0, s!!1)
 geneToSeq :: Gene -> Sequence t
 geneToSeq g = Seq (fromStr $ geneInfo g) (fromStr $ nucSequence g) (Nothing)
 
+getGlobalAlignmentOfGenes :: Gene -> Gene -> String
+getGlobalAlignmentOfGenes g1 g2 = getGlobalAlignment s1 s2
+	where 	s1=geneToSeq g1;
+			s2=geneToSeq g2;
+
 --Ignoring dealing with "Quality" of sequence currently
 getGlobalAlignment :: Sequence t -> Sequence t -> String
 getGlobalAlignment s1 s2 = showalign e
@@ -199,5 +204,29 @@ getGlobalAlignment s1 s2 = showalign e
 test= let (a,e)=global_align (blastn_default) (-10,-1) (castToNuc (Seq (fromStr "header") (fromStr "AAAAATTTTT") (Nothing)))
 													   (castToNuc (Seq (fromStr "header") (fromStr "AAAAATTTTG") (Nothing)))
 			in putStrLn $ showalign e
+
+
+geneFragmentsToGenes :: [String] -> Int-> [Gene]
+geneFragmentsToGenes (x:[]) i= [Gene{geneInfo=("fragment "++(show i)), nucSequence=x}]
+geneFragmentsToGenes (x:xs) i= [Gene{geneInfo=("fragment "++(show i)), nucSequence=x}] ++ geneFragmentsToGenes xs (i+1)
+
+
+mergeFragments :: [Gene] -> Gene
+mergeFragments g = foldl1 (+) g
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+--Testing data
+
+seqFragments1=[	"AAACCAGCCGACTACAT","CTACATTTACGCCATTGAGGCCA","AGGCCACATGGATAGA"
+			   ,"GATAGAGCGGAAAACTGGCTGTG","GCTGTGCGCCATGAAACAGACGG","AGACGGACACCAAGCC"
+			   ,"CAAGCCCGCACACATAT","ACATATACACCAGCGCTCGAAAA","CGAAAAATAGAAACAAAAGTCGTGTAAGTG"]
+
+
+seqFragments2=["AAAATTTT", "TTTTCCCC", "CCCCGGGG", "GGGGATAT", "ATATGCGC"]
+
+
+
+
 
 

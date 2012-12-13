@@ -1,6 +1,4 @@
 module Converter
-
-
 where
 
 import ConverterTestData
@@ -14,6 +12,7 @@ data Gene = Gene 	{ geneInfo :: String
 instance Show Gene where
   show g="Gene Name:\t"++(geneInfo g)++"\nGene sequence:\n"
           ++ geneShowFormat (nucSequence g)
+
 
 geneShowFormat :: String -> String
 geneShowFormat [] = []
@@ -30,8 +29,28 @@ insertSpaces s = a++" "++b++" "++c++" "++d++"\n"
 
 data Protein = Protein {   proteinInfo :: String
                          , aaSequence :: [AA]
-                       } deriving (Show, Eq)
+                       } deriving (Eq)
 
+instance Show Protein where
+  show p="Protein name:\t"++(proteinInfo p)++"\nProtein Sequence:\n"
+          ++ proteinShowFormat (aaSequence p)
+
+proteinShowFormat :: [AA] -> String
+proteinShowFormat [] = []
+proteinShowFormat s  =  if length s < 20
+                        then insertSpacesForProteins s
+                        else (insertSpacesForProteins a) ++ proteinShowFormat b
+                          where (a,b) = splitAt 20 s
+
+insertSpacesForProteins :: [AA] -> String
+insertSpacesForProteins s = a++" "++b++" "++c++" "++d++"\n"
+  where (a', e)=splitAt 5 s
+        (b', f)=splitAt 5 e
+        (c', d')=splitAt 5 f
+        a=show a'
+        b=show b'
+        c=show c'
+        d=show d'
 
 data AA = Phe | Leu | Ile | Met
         | Val | Ser | Pro | Thr
@@ -43,7 +62,7 @@ data AA = Phe | Leu | Ile | Met
 
 
 toProtein :: Gene -> Protein
-toProtein g = let gS = nucSequence g
+toProtein g = let gS = dnaToRNA $ getOrf g
               in let aa = convertToAA gS
                  in Protein {proteinInfo=(geneInfo g), aaSequence=aa}
 
@@ -81,6 +100,7 @@ dnaToRNA ('A':xs)="A" ++ dnaToRNA xs
 dnaToRNA ('T':xs)="U" ++ dnaToRNA xs
 dnaToRNA ('G':xs)="G" ++ dnaToRNA xs
 dnaToRNA ('C':xs)="C" ++ dnaToRNA xs
+dnaToRNA ('U':xs)="U" ++ dnaToRNA xs --only here in the odd case that from a fasta file we get an RNA sequence
 
 isStartCodon :: String -> Bool
 isStartCodon ('A':'T':'G':xs) = True
@@ -96,19 +116,33 @@ getOrf :: Gene -> String
 getOrf g =  getOrfFromSequence a
   where a=nucSequence g
 
+isDNA :: String -> Bool
+isDNA [] = True
+isDNA (x:[]) = isDNANuc x
+isDNA (x:xs) =  if isDNANuc x
+                then isDNA xs
+                else False
+
+isDNANuc :: Char -> Bool
+isDNANuc 'A' = True
+isDNANuc 'T' = True
+isDNANuc 'C' = True
+isDNANuc 'G' = True
+isDNANuc  _  = False
+
 getOrfFromSequence :: String -> String
 getOrfFromSequence s = ss0 ++ (readRestOfOrf ss2)
-  where   p=getSeqSplit s 3 0;
+  where   p=getSeqSplitForConverter s 3 0;
           d=[(y,x) | (y,x)<-p, isStartCodon x];
           (b,a)=head d;
           (ss1,ss)=splitAt b s;
-          (ss0, ss2)=splitAt (b+3) ss;
+          (ss0, ss2)=splitAt  3 ss;
 
-getSeqSplit :: String -> Int -> Int -> [(Int, String)]
-getSeqSplit s@(x:xs) l i= if length s <l
+getSeqSplitForConverter :: String -> Int -> Int -> [(Int, String)]
+getSeqSplitForConverter s@(x:xs) l i= if length s <l
           then []
           else let (b,a)=splitAt l s
-              in [(i, b)] ++ getSeqSplit xs l (i+1)
+              in [(i, b)] ++ getSeqSplitForConverter xs l (i+1)
 
 readRestOfOrf :: String -> String
 readRestOfOrf s = if length s <3

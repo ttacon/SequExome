@@ -1,8 +1,5 @@
-module FASTA (
-	
-	parseGene
-
-	) where
+module FASTA 	
+where
 
 	{-
 	GeneSequence
@@ -17,6 +14,7 @@ import qualified System.Time
 import FastaSequenceTestData
 import Converter
 import Data.Either
+import System.IO.Unsafe
 
 
 
@@ -24,12 +22,15 @@ import Data.Either
 type FastaParser a = GenParser Char () a
 
 
+getGenes :: String ->[Gene]
+getGenes s = let a=parseFastaFileToGenes s in unsafePerformIO a
+
 parseFastaFileToGenes a=do  b <- readFile a
                             --putStrLn b
                             s <- return $  parseFastaFile b
                             case s of
                                 Left _  -> error ("parse failed => "++a)
-                                Right g ->mapM_ print g
+                                Right g -> return g
 
 
 
